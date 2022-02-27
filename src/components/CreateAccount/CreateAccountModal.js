@@ -11,6 +11,10 @@ const CreateAccountModal = ({
   createAccount,
   response,
 }) => {
+  const copyTextToClipboard = async () => {
+    await navigator.clipboard.writeText(response);
+  };
+
   return (
     <div className="create-account-modal">
       <Modal
@@ -42,7 +46,18 @@ const CreateAccountModal = ({
             </div>
           </Form>
           <br />
-          {response && <Alert variant="secondary">{response}</Alert>}
+          {response && (
+            <Alert variant="secondary">
+              {response}
+              <br />
+              <br />
+              {response !== "Waiting for network..." ? (
+                <Button variant="secondary" onClick={copyTextToClipboard}>
+                  Copy to clipboard
+                </Button>
+              ) : null}
+            </Alert>
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={toggleCreateAccountModal}>

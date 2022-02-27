@@ -81,10 +81,10 @@ export default class StellarService {
     try {
       const submitTx = await horizon.submitTransaction(tx);
       console.log("Account created!", submitTx);
-      return `Account created with Public Key: ${dest.publicKey()}`;
+      return `Account created with Public Key: ${dest.publicKey()}, Secret Key: ${dest.secret()}`;
     } catch (e) {
       console.log(e);
-      return e;
+      return "Error creating account, check console for more details";
     }
   }
 
@@ -170,7 +170,7 @@ export default class StellarService {
       this.buyRes = `Buy offer sent at ${price}, sold ${soldAsset}, bought ${amount} ${boughtAsset}`;
     } catch (e) {
       console.log(e);
-      return e;
+      return "Error sending offer, check console for more details";
     }
   }
 
@@ -221,7 +221,7 @@ export default class StellarService {
       this.buyRes = `Updated buy offer at ${price}, sold ${soldAsset}, bought ${amount} ${boughtAsset}`;
     } catch (e) {
       console.log(e);
-      return e;
+      return "Error sending offer, check console for more details";
     }
   }
 
@@ -279,7 +279,7 @@ export default class StellarService {
       this.sellRes = `Sell offer sent at ${price}, sold ${soldAsset}, bought ${amount} ${boughtAsset}`;
     } catch (e) {
       console.log(e);
-      return e;
+      return "Error sending offer, check console for more details";
     }
   }
 
@@ -330,7 +330,7 @@ export default class StellarService {
       this.sellRes = `Updated Sell offer at ${price}, sold ${soldAsset}, bought ${amount} ${boughtAsset}`;
     } catch (e) {
       console.log(e);
-      return e;
+      return "Error sending offer, check console for more details";
     }
   }
 }

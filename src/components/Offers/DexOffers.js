@@ -45,11 +45,12 @@ const DexOffers = ({ authenticated, secretKey, setAuthResponse }) => {
       const getSellingPrice = await Stellar.getBNBUSDTpair("higher");
       setSellingPrice(getSellingPrice);
     }
-    const interval = setInterval(() => latest(), 1000);
+    latest();
+    const interval = setInterval(() => latest(), 30000);
     return () => {
       clearInterval(interval);
     };
-  });
+  }, []);
 
   const getBalanceBNB = async () => {
     try {

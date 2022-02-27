@@ -46,10 +46,9 @@ const LoginModal = ({
           <Modal.Title>Login</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form>
+          <Form autoComplete="off">
             <Form.Group className="mb-3" controlId="pubkeysendfrom">
               <Form.Label>Secret Key</Form.Label>
-
               <Form.Control
                 type="text"
                 value={secretKey}
