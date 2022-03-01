@@ -9,9 +9,12 @@ const DexOffersModal = ({
   showOffersModal,
   handleCloseOffersModal,
   buyResponse,
+  cancelBuyOffer,
   sellResponse,
+  cancelSellOffer,
   amount,
   setAmount,
+  validate,
   buy,
   sell,
   marketPrice,
@@ -87,18 +90,53 @@ const DexOffersModal = ({
                         size="lg"
                         onClick={buy}
                         type="submit"
+                        disabled={!validate()}
                       >
                         Buy BNB
                       </Button>
                     </div>
+                    <Form.Group className="mb-3" controlId="closebtn">
+                      <Form.Text className="text-muted">
+                        Click the close button below, to cancel an offer.
+                      </Form.Text>
+                    </Form.Group>
                   </Form>
-                  <br />
-                  {buyResponse && (
-                    <Alert variant="secondary">{buyResponse}</Alert>
-                  )}
-                  {sellResponse && (
-                    <Alert variant="secondary">{sellResponse}</Alert>
-                  )}
+                  {buyResponse &&
+                    buyResponse.map((res, idx) => {
+                      return (
+                        <div key={idx}>
+                          {!res.filled ? (
+                            <Alert
+                              variant="secondary"
+                              onClick={cancelBuyOffer(res.offerId)}
+                              dismissible
+                            >
+                              {res.response}
+                            </Alert>
+                          ) : (
+                            <Alert variant="secondary">{res.response}</Alert>
+                          )}
+                        </div>
+                      );
+                    })}
+                  {sellResponse &&
+                    sellResponse.map((res, idx) => {
+                      return (
+                        <div key={idx}>
+                          {!res.filled ? (
+                            <Alert
+                              variant="secondary"
+                              onClick={cancelSellOffer(res.offerId)}
+                              dismissible
+                            >
+                              {res.response}
+                            </Alert>
+                          ) : (
+                            <Alert variant="secondary">{res.response}</Alert>
+                          )}
+                        </div>
+                      );
+                    })}
                 </div>
               </Tab.Pane>
               <Tab.Pane eventKey={2} title="Sell">
@@ -147,18 +185,54 @@ const DexOffersModal = ({
                         size="lg"
                         onClick={sell}
                         type="submit"
+                        disabled={!validate()}
                       >
                         Sell BNB
                       </Button>
                     </div>
+
+                    <Form.Group className="mb-3" controlId="closebtn">
+                      <Form.Text className="text-muted">
+                        Click the close button below, to cancel an offer.
+                      </Form.Text>
+                    </Form.Group>
                   </Form>
-                  <br />
-                  {buyResponse && (
-                    <Alert variant="secondary">{buyResponse}</Alert>
-                  )}
-                  {sellResponse && (
-                    <Alert variant="secondary">{sellResponse}</Alert>
-                  )}
+                  {buyResponse &&
+                    buyResponse.map((res, idx) => {
+                      return (
+                        <div key={idx}>
+                          {!res.filled ? (
+                            <Alert
+                              variant="secondary"
+                              onClick={cancelBuyOffer(res.offerId)}
+                              dismissible
+                            >
+                              {res.response}
+                            </Alert>
+                          ) : (
+                            <Alert variant="secondary">{res.response}</Alert>
+                          )}
+                        </div>
+                      );
+                    })}
+                  {sellResponse &&
+                    sellResponse.map((res, idx) => {
+                      return (
+                        <div key={idx}>
+                          {!res.filled ? (
+                            <Alert
+                              variant="secondary"
+                              onClick={cancelSellOffer(res.offerId)}
+                              dismissible
+                            >
+                              {res.response}
+                            </Alert>
+                          ) : (
+                            <Alert variant="secondary">{res.response}</Alert>
+                          )}
+                        </div>
+                      );
+                    })}
                 </div>
               </Tab.Pane>
             </Tab.Content>

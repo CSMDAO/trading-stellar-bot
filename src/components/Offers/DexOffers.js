@@ -8,7 +8,7 @@ import DexOffersModal from "./DexOffersModal";
 const DexOffers = ({ authenticated, secretKey, setAuthResponse }) => {
   const Stellar = new StellarService();
 
-  const [buyResponse, setBuyResponse] = useState("");
+  const [buyResponse, setBuyResponse] = useState([]);
   const [sellResponse, setSellResponse] = useState("");
 
   const [amount, setAmount] = useState("");
@@ -80,16 +80,23 @@ const DexOffers = ({ authenticated, secretKey, setAuthResponse }) => {
     return Number(sellingPrice * Number(amount)).toFixed(2);
   };
 
+  const validate = () => {
+    return amount.length > 0;
+  };
+
   const buy = async (e) => {
     e.preventDefault();
     try {
-      setBuyResponse("Waiting for network...");
       const data = await Stellar.buyOffer(secretKey, amount);
       const buyRes = await Stellar.buyResponse();
-      setBuyResponse(buyRes);
+      setBuyResponse((buyResponse) => [...buyResponse, buyRes]);
       setInterval(async () => {
         const res = await Stellar.buyResponse();
-        setBuyResponse(res);
+        setBuyResponse((buyResponse) =>
+          [...buyResponse].map((el) =>
+            el.id === res.id ? { ...el, response: res.response } : el
+          )
+        );
       }, 30000);
       return data;
     } catch (e) {
@@ -100,14 +107,35 @@ const DexOffers = ({ authenticated, secretKey, setAuthResponse }) => {
   const sell = async (e) => {
     e.preventDefault();
     try {
-      setSellResponse("Waiting for network...");
       const data = await Stellar.sellOffer(secretKey, amount);
       const sellRes = await Stellar.sellResponse();
-      setSellResponse(sellRes);
+      setSellResponse((sellResponse) => [...sellResponse, sellRes]);
       setInterval(async () => {
         const res = await Stellar.sellResponse();
-        setSellResponse(res);
+        setSellResponse((sellResponse) =>
+          [...sellResponse].map((el) =>
+            el.id === res.id ? { ...el, response: res.response } : el
+          )
+        );
       }, 30000);
+      return data;
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const cancelBuyOffer = async (id) => {
+    try {
+      const data = await Stellar.buyOffer(secretKey, amount, id);
+      return data;
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const cancelSellOffer = async (id) => {
+    try {
+      const data = await Stellar.sellOffer(secretKey, amount, id);
       return data;
     } catch (e) {
       console.log(e);
@@ -137,8 +165,11 @@ const DexOffers = ({ authenticated, secretKey, setAuthResponse }) => {
           sellResponse={sellResponse}
           amount={amount}
           setAmount={setAmount}
+          validate={validate}
           buy={buy}
+          cancelBuyOffer={cancelBuyOffer}
           sell={sell}
+          cancelSellOffer={cancelSellOffer}
           marketPrice={marketPrice}
           buyingPrice={buyingPrice}
           sellingPrice={sellingPrice}

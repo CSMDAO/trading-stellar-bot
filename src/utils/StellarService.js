@@ -116,7 +116,7 @@ export default class StellarService {
     return this.sellRes;
   }
 
-  async buyOffer(sourceSecretKey, amount) {
+  async buyOffer(sourceSecretKey, amount, cancelOfferId) {
     let source = StellarSdk.Keypair.fromSecret(sourceSecretKey);
     let horizon = new StellarSdk.Server("https://horizon.stellar.org");
 
@@ -126,20 +126,38 @@ export default class StellarService {
       fee: "100000",
     });
 
-    builder.addOperation(
-      StellarSdk.Operation.manageBuyOffer({
-        selling: new StellarSdk.Asset(
-          "USDC",
-          "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN"
-        ),
-        buying: new StellarSdk.Asset(
-          "BNB",
-          "GANCHORKQEZ46AFTJLEVTA5MCE432MSR5VMVQBWW3LAUYGTBFTKGKTJF"
-        ),
-        buyAmount: amount,
-        price: await this.getBNBUSDTpair("lower"),
-      })
-    );
+    if (cancelOfferId !== undefined) {
+      builder.addOperation(
+        StellarSdk.Operation.manageBuyOffer({
+          selling: new StellarSdk.Asset(
+            "USDC",
+            "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN"
+          ),
+          buying: new StellarSdk.Asset(
+            "BNB",
+            "GANCHORKQEZ46AFTJLEVTA5MCE432MSR5VMVQBWW3LAUYGTBFTKGKTJF"
+          ),
+          buyAmount: "0",
+          price: await this.getBNBUSDTpair("lower"),
+          offerId: cancelOfferId,
+        })
+      );
+    } else {
+      builder.addOperation(
+        StellarSdk.Operation.manageBuyOffer({
+          selling: new StellarSdk.Asset(
+            "USDC",
+            "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN"
+          ),
+          buying: new StellarSdk.Asset(
+            "BNB",
+            "GANCHORKQEZ46AFTJLEVTA5MCE432MSR5VMVQBWW3LAUYGTBFTKGKTJF"
+          ),
+          buyAmount: amount,
+          price: await this.getBNBUSDTpair("lower"),
+        })
+      );
+    }
 
     builder.setNetworkPassphrase(StellarSdk.Networks.PUBLIC);
 
@@ -150,27 +168,47 @@ export default class StellarService {
 
     try {
       const submitTransaction = await horizon.submitTransaction(tx);
-      let currentOfferId =
-        submitTransaction.offerResults[0].currentOffer.offerId;
-      let price =
-        submitTransaction.offerResults[0].currentOffer.price.d /
-        submitTransaction.offerResults[0].currentOffer.price.n;
-      let soldAsset =
-        submitTransaction.offerResults[0].currentOffer.selling.assetCode;
-      let boughtAsset =
-        submitTransaction.offerResults[0].currentOffer.buying.assetCode;
-      console.log("Buy Offer successfully sent!", submitTransaction);
-      setInterval(async () => {
-        return await this.updateBuyOffer(
-          sourceSecretKey,
-          amount,
-          currentOfferId
-        );
-      }, 60000);
-      this.buyRes = `Buy offer sent at ${price}, sold ${soldAsset}, bought ${amount} ${boughtAsset}`;
+      if (cancelOfferId !== undefined) {
+        return;
+      }
+      const offerRes = submitTransaction.offerResults[0];
+      if (offerRes.wasImmediatelyFilled) {
+        let offerId = offerRes.offersClaimed[0].offerId;
+        let amountBought = offerRes.amountBought;
+        let boughtAsset = offerRes.offersClaimed[0].assetSold.assetCode;
+        this.buyRes = {
+          offerId: offerId,
+          filled: true,
+          response: `Buy order for ${amountBought} ${boughtAsset}, has just been filled.`,
+        };
+        console.log("Buy order filled", submitTransaction);
+      } else {
+        let currentOfferId =
+          submitTransaction.offerResults[0].currentOffer.offerId;
+        let price =
+          submitTransaction.offerResults[0].currentOffer.price.d /
+          submitTransaction.offerResults[0].currentOffer.price.n;
+        let soldAsset =
+          submitTransaction.offerResults[0].currentOffer.selling.assetCode;
+        let boughtAsset =
+          submitTransaction.offerResults[0].currentOffer.buying.assetCode;
+        setInterval(async () => {
+          return await this.updateBuyOffer(
+            sourceSecretKey,
+            amount,
+            currentOfferId
+          );
+        }, 60000);
+        this.buyRes = {
+          offerId: currentOfferId,
+          filled: false,
+          response: `Buy offer sent at ${price}, sold ${soldAsset}, bought ${amount} ${boughtAsset}`,
+        };
+        console.log("Buy Offer successfully sent!", submitTransaction);
+      }
     } catch (e) {
       console.log(e);
-      return "Error sending offer, check console for more details";
+      return "Error sending transaction, check console for more details";
     }
   }
 
@@ -210,22 +248,41 @@ export default class StellarService {
 
     try {
       const submitTransaction = await horizon.submitTransaction(tx);
-      let price =
-        submitTransaction.offerResults[0].currentOffer.price.d /
-        submitTransaction.offerResults[0].currentOffer.price.n;
-      let soldAsset =
-        submitTransaction.offerResults[0].currentOffer.selling.assetCode;
-      let boughtAsset =
-        submitTransaction.offerResults[0].currentOffer.buying.assetCode;
-      console.log("Updated Buy Offer successfully sent!", submitTransaction);
-      this.buyRes = `Updated buy offer at ${price}, sold ${soldAsset}, bought ${amount} ${boughtAsset}`;
+      const offerRes = submitTransaction.offerResults[0];
+      if (offerRes.wasImmediatelyFilled) {
+        let offerId = offerRes.offersClaimed[0].offerId;
+        let amountBought = offerRes.amountBought;
+        let boughtAsset = offerRes.offersClaimed[0].assetBought.assetCode;
+        this.buyRes = {
+          offerId: offerId,
+          filled: true,
+          response: `Buy order for ${amountBought} ${boughtAsset}, has just been filled.`,
+        };
+        console.log("Buy order filled", submitTransaction);
+      } else {
+        let currentOfferId =
+          submitTransaction.offerResults[0].currentOffer.offerId;
+        let price =
+          submitTransaction.offerResults[0].currentOffer.price.d /
+          submitTransaction.offerResults[0].currentOffer.price.n;
+        let soldAsset =
+          submitTransaction.offerResults[0].currentOffer.selling.assetCode;
+        let boughtAsset =
+          submitTransaction.offerResults[0].currentOffer.buying.assetCode;
+        this.buyRes = {
+          offerId: currentOfferId,
+          filled: false,
+          response: `Updated Buy offer at ${price}, sold ${soldAsset}, bought ${amount} ${boughtAsset}`,
+        };
+        console.log("Updated Buy Offer successfully sent!", submitTransaction);
+      }
     } catch (e) {
       console.log(e);
-      return "Error sending offer, check console for more details";
+      return "Error sending transaction, check console for more details";
     }
   }
 
-  async sellOffer(sourceSecretKey, amount) {
+  async sellOffer(sourceSecretKey, amount, cancelOfferId) {
     let source = StellarSdk.Keypair.fromSecret(sourceSecretKey);
     let horizon = new StellarSdk.Server("https://horizon.stellar.org");
 
@@ -235,20 +292,38 @@ export default class StellarService {
       fee: "100000",
     });
 
-    builder.addOperation(
-      StellarSdk.Operation.manageSellOffer({
-        selling: new StellarSdk.Asset(
-          "BNB",
-          "GANCHORKQEZ46AFTJLEVTA5MCE432MSR5VMVQBWW3LAUYGTBFTKGKTJF"
-        ),
-        buying: new StellarSdk.Asset(
-          "USDC",
-          "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN"
-        ),
-        amount: amount,
-        price: await this.getBNBUSDTpair("higher"),
-      })
-    );
+    if (cancelOfferId !== undefined) {
+      builder.addOperation(
+        StellarSdk.Operation.manageBuyOffer({
+          selling: new StellarSdk.Asset(
+            "USDC",
+            "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN"
+          ),
+          buying: new StellarSdk.Asset(
+            "BNB",
+            "GANCHORKQEZ46AFTJLEVTA5MCE432MSR5VMVQBWW3LAUYGTBFTKGKTJF"
+          ),
+          buyAmount: "0",
+          price: await this.getBNBUSDTpair("higher"),
+          offerId: cancelOfferId,
+        })
+      );
+    } else {
+      builder.addOperation(
+        StellarSdk.Operation.manageBuyOffer({
+          selling: new StellarSdk.Asset(
+            "USDC",
+            "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN"
+          ),
+          buying: new StellarSdk.Asset(
+            "BNB",
+            "GANCHORKQEZ46AFTJLEVTA5MCE432MSR5VMVQBWW3LAUYGTBFTKGKTJF"
+          ),
+          buyAmount: amount,
+          price: await this.getBNBUSDTpair("higher"),
+        })
+      );
+    }
 
     builder.setNetworkPassphrase(StellarSdk.Networks.PUBLIC);
 
@@ -259,27 +334,47 @@ export default class StellarService {
 
     try {
       const submitTransaction = await horizon.submitTransaction(tx);
-      let currentOfferId =
-        submitTransaction.offerResults[0].currentOffer.offerId;
-      let price =
-        submitTransaction.offerResults[0].currentOffer.price.d /
-        submitTransaction.offerResults[0].currentOffer.price.n;
-      let soldAsset =
-        submitTransaction.offerResults[0].currentOffer.selling.assetCode;
-      let boughtAsset =
-        submitTransaction.offerResults[0].currentOffer.buying.assetCode;
-      console.log("Sell Offer successfully sent!", submitTransaction);
-      setInterval(async () => {
-        return await this.updateSellOffer(
-          sourceSecretKey,
-          amount,
-          currentOfferId
-        );
-      }, 60000);
-      this.sellRes = `Sell offer sent at ${price}, sold ${soldAsset}, bought ${amount} ${boughtAsset}`;
+      if (cancelOfferId !== undefined) {
+        return;
+      }
+      const offerRes = submitTransaction.offerResults[0];
+      if (offerRes.wasImmediatelyFilled) {
+        let offerId = offerRes.offersClaimed[0].offerId;
+        let amountSold = offerRes.amountSold;
+        let soldAsset = offerRes.offersClaimed[0].assetSold.assetCode;
+        this.sellRes = {
+          offerId: offerId,
+          filled: true,
+          response: `Sell order for ${amountSold} ${soldAsset}, has just been filled.`,
+        };
+        console.log("Sell order filled", submitTransaction);
+      } else {
+        let currentOfferId =
+          submitTransaction.offerResults[0].currentOffer.offerId;
+        let price =
+          submitTransaction.offerResults[0].currentOffer.price.d /
+          submitTransaction.offerResults[0].currentOffer.price.n;
+        let soldAsset =
+          submitTransaction.offerResults[0].currentOffer.selling.assetCode;
+        let boughtAsset =
+          submitTransaction.offerResults[0].currentOffer.buying.assetCode;
+        setInterval(async () => {
+          return await this.updateSellOffer(
+            sourceSecretKey,
+            amount,
+            currentOfferId
+          );
+        }, 60000);
+        this.sellRes = {
+          offerId: currentOfferId,
+          filled: false,
+          response: `Sell offer sent at ${price}, sold ${soldAsset}, bought ${amount} ${boughtAsset}`,
+        };
+        console.log("Sell Offer successfully sent!", submitTransaction);
+      }
     } catch (e) {
       console.log(e);
-      return "Error sending offer, check console for more details";
+      return "Error sending transaction, check console for more details";
     }
   }
 
@@ -319,18 +414,37 @@ export default class StellarService {
 
     try {
       const submitTransaction = await horizon.submitTransaction(tx);
-      let price =
-        submitTransaction.offerResults[0].currentOffer.price.d /
-        submitTransaction.offerResults[0].currentOffer.price.n;
-      let soldAsset =
-        submitTransaction.offerResults[0].currentOffer.selling.assetCode;
-      let boughtAsset =
-        submitTransaction.offerResults[0].currentOffer.buying.assetCode;
-      console.log("Updated Sell Offer successfully sent!", submitTransaction);
-      this.sellRes = `Updated Sell offer at ${price}, sold ${soldAsset}, bought ${amount} ${boughtAsset}`;
+      const offerRes = submitTransaction.offerResults[0];
+      if (offerRes.wasImmediatelyFilled) {
+        let offerId = offerRes.offersClaimed[0].offerId;
+        let amountSold = offerRes.amountSold;
+        let soldAsset = offerRes.offersClaimed[0].assetSold.assetCode;
+        this.sellRes = {
+          offerId: offerId,
+          filled: true,
+          response: `Sell order for ${amountSold} ${soldAsset}, has just been filled.`,
+        };
+        console.log("Sell order filled", submitTransaction);
+      } else {
+        let currentOfferId =
+          submitTransaction.offerResults[0].currentOffer.offerId;
+        let price =
+          submitTransaction.offerResults[0].currentOffer.price.d /
+          submitTransaction.offerResults[0].currentOffer.price.n;
+        let soldAsset =
+          submitTransaction.offerResults[0].currentOffer.selling.assetCode;
+        let boughtAsset =
+          submitTransaction.offerResults[0].currentOffer.buying.assetCode;
+        this.sellRes = {
+          offerId: currentOfferId,
+          filled: false,
+          response: `Updated Sell offer at ${price}, sold ${soldAsset}, bought ${amount} ${boughtAsset}`,
+        };
+        console.log("Updated Sell Offer successfully sent!", submitTransaction);
+      }
     } catch (e) {
       console.log(e);
-      return "Error sending offer, check console for more details";
+      return "Error sending transaction, check console for more details";
     }
   }
 }

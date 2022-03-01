@@ -29,7 +29,7 @@ const CreateAccount = ({ authenticated, secretKey, setAuthResponse }) => {
   };
 
   return (
-    <div>
+    <div className="create-account">
       <div className="create-account-button">
         <Button
           variant="secondary"
