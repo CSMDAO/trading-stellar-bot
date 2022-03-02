@@ -9,9 +9,9 @@ const DexOffersModal = ({
   showOffersModal,
   handleCloseOffersModal,
   buyResponse,
-  cancelBuyOffer,
+  // cancelBuyOffer,
   sellResponse,
-  cancelSellOffer,
+  // cancelSellOffer,
   amount,
   setAmount,
   validate,
@@ -105,7 +105,7 @@ const DexOffersModal = ({
                     buyResponse.map((res, idx) => {
                       return (
                         <div key={idx}>
-                          {!res.filled ? (
+                          {/* {!res.filled ? (
                             <Alert
                               variant="secondary"
                               onClick={cancelBuyOffer(res.offerId)}
@@ -113,9 +113,9 @@ const DexOffersModal = ({
                             >
                               {res.response}
                             </Alert>
-                          ) : (
-                            <Alert variant="secondary">{res.response}</Alert>
-                          )}
+                          ) : ( */}
+                          <Alert variant="secondary">{res.response}</Alert>
+                          {/* )} */}
                         </div>
                       );
                     })}
@@ -123,7 +123,7 @@ const DexOffersModal = ({
                     sellResponse.map((res, idx) => {
                       return (
                         <div key={idx}>
-                          {!res.filled ? (
+                          {/* {!res.filled ? (
                             <Alert
                               variant="secondary"
                               onClick={cancelSellOffer(res.offerId)}
@@ -131,9 +131,9 @@ const DexOffersModal = ({
                             >
                               {res.response}
                             </Alert>
-                          ) : (
-                            <Alert variant="secondary">{res.response}</Alert>
-                          )}
+                          ) : ( */}
+                          <Alert variant="secondary">{res.response}</Alert>
+                          {/* )} */}
                         </div>
                       );
                     })}
@@ -201,7 +201,7 @@ const DexOffersModal = ({
                     buyResponse.map((res, idx) => {
                       return (
                         <div key={idx}>
-                          {!res.filled ? (
+                          {/* {!res.filled ? (
                             <Alert
                               variant="secondary"
                               onClick={cancelBuyOffer(res.offerId)}
@@ -209,9 +209,9 @@ const DexOffersModal = ({
                             >
                               {res.response}
                             </Alert>
-                          ) : (
-                            <Alert variant="secondary">{res.response}</Alert>
-                          )}
+                          ) : ( */}
+                          <Alert variant="secondary">{res.response}</Alert>
+                          {/* )} */}
                         </div>
                       );
                     })}
@@ -219,7 +219,7 @@ const DexOffersModal = ({
                     sellResponse.map((res, idx) => {
                       return (
                         <div key={idx}>
-                          {!res.filled ? (
+                          {/* {!res.filled ? (
                             <Alert
                               variant="secondary"
                               onClick={cancelSellOffer(res.offerId)}
@@ -227,9 +227,9 @@ const DexOffersModal = ({
                             >
                               {res.response}
                             </Alert>
-                          ) : (
-                            <Alert variant="secondary">{res.response}</Alert>
-                          )}
+                          ) : ( */}
+                          <Alert variant="secondary">{res.response}</Alert>
+                          {/* )} */}
                         </div>
                       );
                     })}

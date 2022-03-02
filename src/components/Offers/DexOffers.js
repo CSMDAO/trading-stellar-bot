@@ -9,7 +9,7 @@ const DexOffers = ({ authenticated, secretKey, setAuthResponse }) => {
   const Stellar = new StellarService();
 
   const [buyResponse, setBuyResponse] = useState([]);
-  const [sellResponse, setSellResponse] = useState("");
+  const [sellResponse, setSellResponse] = useState([]);
 
   const [amount, setAmount] = useState("");
 
@@ -124,23 +124,23 @@ const DexOffers = ({ authenticated, secretKey, setAuthResponse }) => {
     }
   };
 
-  const cancelBuyOffer = async (id) => {
-    try {
-      const data = await Stellar.buyOffer(secretKey, amount, id);
-      return data;
-    } catch (e) {
-      console.log(e);
-    }
-  };
+  // const cancelBuyOffer = async (id) => {
+  //   try {
+  //     const data = await Stellar.buyOffer(secretKey, amount, id);
+  //     return data;
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // };
 
-  const cancelSellOffer = async (id) => {
-    try {
-      const data = await Stellar.sellOffer(secretKey, amount, id);
-      return data;
-    } catch (e) {
-      console.log(e);
-    }
-  };
+  // const cancelSellOffer = async (id) => {
+  //   try {
+  //     const data = await Stellar.sellOffer(secretKey, amount, id);
+  //     return data;
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // };
 
   return (
     <div className="trade-sdex">
@@ -167,9 +167,9 @@ const DexOffers = ({ authenticated, secretKey, setAuthResponse }) => {
           setAmount={setAmount}
           validate={validate}
           buy={buy}
-          cancelBuyOffer={cancelBuyOffer}
+          // cancelBuyOffer={cancelBuyOffer}
           sell={sell}
-          cancelSellOffer={cancelSellOffer}
+          // cancelSellOffer={cancelSellOffer}
           marketPrice={marketPrice}
           buyingPrice={buyingPrice}
           sellingPrice={sellingPrice}
