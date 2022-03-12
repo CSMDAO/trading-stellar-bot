@@ -11,6 +11,7 @@ const Home = () => {
   const [authenticated, setAuthenticated] = useState(false);
 
   const [secretKey, setSecretKey] = useState("");
+  const [publicKey, setPublicKey] = useState("");
 
   const [response, setResponse] = useState("");
 
@@ -28,6 +29,8 @@ const Home = () => {
           setAuthenticated={setAuthenticated}
           secretKey={secretKey}
           setSecretKey={setSecretKey}
+          publicKey={publicKey}
+          setPublicKey={setPublicKey}
         />
 
         <DexOffers
@@ -39,6 +42,7 @@ const Home = () => {
         <CreateAccount
           authenticated={authenticated}
           secretKey={secretKey}
+          publicKey={publicKey}
           setAuthResponse={setResponse}
         />
       </div>
