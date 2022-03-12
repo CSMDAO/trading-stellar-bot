@@ -51,13 +51,14 @@ export default class StellarService {
     }
   }
 
-  async createAccount(sourceSecretKey, amount) {
+  async createAccount(publicKey, sourceSecretKey, amount) {
     let source = StellarSdk.Keypair.fromSecret(sourceSecretKey);
+    let pk = StellarSdk.Keypair.fromPublicKey(publicKey);
     let dest = StellarSdk.Keypair.fromSecret(this.pair.secret());
 
     let horizon = new StellarSdk.Server("https://horizon.stellar.org");
 
-    let sourceAccount = await horizon.loadAccount(source.publicKey());
+    let sourceAccount = await horizon.loadAccount(pk.publicKey());
 
     let builder = new StellarSdk.TransactionBuilder(sourceAccount, {
       fee: "100000",
@@ -294,32 +295,32 @@ export default class StellarService {
 
     if (cancelOfferId !== undefined) {
       builder.addOperation(
-        StellarSdk.Operation.manageBuyOffer({
+        StellarSdk.Operation.manageSellOffer({
           selling: new StellarSdk.Asset(
-            "USDC",
-            "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN"
-          ),
-          buying: new StellarSdk.Asset(
             "BNB",
             "GANCHORKQEZ46AFTJLEVTA5MCE432MSR5VMVQBWW3LAUYGTBFTKGKTJF"
           ),
-          buyAmount: "0",
+          buying: new StellarSdk.Asset(
+            "USDC",
+            "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN"
+          ),
+          amount: amount,
           price: await this.getBNBUSDTpair("higher"),
           offerId: cancelOfferId,
         })
       );
     } else {
       builder.addOperation(
-        StellarSdk.Operation.manageBuyOffer({
+        StellarSdk.Operation.manageSellOffer({
           selling: new StellarSdk.Asset(
-            "USDC",
-            "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN"
-          ),
-          buying: new StellarSdk.Asset(
             "BNB",
             "GANCHORKQEZ46AFTJLEVTA5MCE432MSR5VMVQBWW3LAUYGTBFTKGKTJF"
           ),
-          buyAmount: amount,
+          buying: new StellarSdk.Asset(
+            "USDC",
+            "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN"
+          ),
+          amount: amount,
           price: await this.getBNBUSDTpair("higher"),
         })
       );

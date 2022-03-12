@@ -13,6 +13,13 @@ const LoginModal = ({
   handleSubmit,
   validate,
   response,
+  connect,
+  walletConnectQRCodeModal,
+  walletConnectSessionRequestModal,
+  toggleQRCodeModal,
+  toggleSessionRequestModal,
+  QRCode,
+  uri,
 }) => {
   return (
     <div className="login-modal">
@@ -31,6 +38,9 @@ const LoginModal = ({
               onClick={toggleSecretKeyModal}
             >
               Secret Key
+            </Button>
+            <Button variant="secondary" size="lg" onClick={connect}>
+              WalletConnect
             </Button>
           </div>
         </Modal.Body>
@@ -78,6 +88,52 @@ const LoginModal = ({
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={toggleSecretKeyModal}>
+            Go back
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* QRCode Modal */}
+      <Modal show={walletConnectQRCodeModal} onHide={toggleQRCodeModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            Scan QR code with a WalletConnect-compatible wallet
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Open your WalletConnect-compatible app with Stellar support, like
+          LOBSTR wallet, and scan the QR code to connect.
+          <br />
+          <br />
+          <div className="text-center">
+            <QRCode value={uri} size={300} renderAs="svg" />
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={toggleQRCodeModal}>
+            Go back
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* SessionRequest Modal */}
+      <Modal
+        show={walletConnectSessionRequestModal}
+        onHide={toggleSessionRequestModal}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Connecting to LOBSTR with WalletConnect</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          The connection request was sent to LOBSTR. Confirm the request in the
+          app and continue.
+          <br />
+          <br />
+          <br />
+          Connecting...
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={toggleSessionRequestModal}>
             Go back
           </Button>
         </Modal.Footer>
